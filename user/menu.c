@@ -35,7 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <vita2d.h>
+#include <vita2d-fbo.h>
 
 #include "main.h"
 #include "menu.h"
