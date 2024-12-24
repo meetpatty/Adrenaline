@@ -138,11 +138,10 @@ int sceSystemFileGetIndexPatched(void *sfo, void *a1, void *a2) {
 }
 
 int RunRebootPatched(u32 *params) {
-	if (strncmp((char *)params[2], "disc0:/", 7) != 0) {
+	if ((char *)params[2] == NULL) {
 		if (rebootex_config.bootfileindex != BOOT_RECOVERY) {
 			rebootex_config.bootfileindex = BOOT_NORMAL;
 		}
-
 		memset(rebootex_config.umdfilename, 0, 0x48);
 	}
 

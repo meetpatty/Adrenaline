@@ -179,9 +179,6 @@ int sceKernelBootLoadFilePatched(BootFile *file, void *a1, void *a2, void *a3, v
 
 		if (rebootex_config->bootfileindex == BOOT_RECOVERY) {
 			rebootex_config->bootfileindex = BOOT_NORMAL;
-			rebootex_config->is_recovery = 1;
-		} else {
-			rebootex_config->is_recovery = 0;
 		}
 
 		file->name = name;

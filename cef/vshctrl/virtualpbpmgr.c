@@ -66,24 +66,41 @@ u8 virtualsfo[408] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-void GetSFOTitleAndDiscID(char *title, int n, char *discid, int m, char *sfo)
+void GetSFOInfo(char *title, int n, char *discid, int m, char *system_version , int *opnssmp, int *parental, char *sfo)
 {
 	SFOHeader *header = (SFOHeader *)sfo;
 	SFODir *entries = (SFODir *)(sfo+0x14);
 	int i;
 	
+	opnssmp[0] = 0;
+	*(u32 *)system_version = 0x30302E31;
+
 	for (i = 0; i < header->nitems; i++)
 	{
-		if (strcmp(sfo+header->fields_table_offs+entries[i].field_offs, "TITLE") == 0)
+		char *fields_str = (char *)( sfo+header->fields_table_offs+entries[i].field_offs );
+		char *values_str = (char *)( sfo+header->values_table_offs+entries[i].val_offs );
+
+		if (strcmp( fields_str , "TITLE") == 0)
 		{
 			memset(title, 0, n);
-			strncpy(title, sfo+header->values_table_offs+entries[i].val_offs, n);
+			strncpy(title, values_str , n);
 		}
-
-		if (strcmp(sfo+header->fields_table_offs+entries[i].field_offs, "DISC_ID") == 0)
+		else if (strcmp( fields_str , "DISC_ID") == 0)
 		{
 			memset(discid, 0, m);
-			strncpy(discid, sfo+header->values_table_offs+entries[i].val_offs, m);
+			strncpy(discid, values_str , m);
+		}
+		else if (strcmp( fields_str , "HRKGMP_VER") == 0)
+		{
+			*opnssmp = *(int *)(values_str);
+		}
+		else if (strcmp( fields_str , "PSP_SYSTEM_VER" ) == 0)
+		{
+			*(u32 *)system_version = *(u32 *)(values_str);
+		}
+		else if( strcmp( fields_str ,"PARENTAL_LEVEL") == 0 )
+		{
+			*parental = *(int *)(values_str);
 		}
 	}
 }
@@ -113,6 +130,7 @@ int virtualpbp_init()
 	
 	memset(vpbps, 0, MAX_FILES*sizeof(VirtualPbp));
 	g_index = 0;
+	virtualsfo[0xEC] = 'E';
 	return 0;
 }
 
@@ -182,7 +200,16 @@ int virtualpbp_add(char *isofile, ScePspDateTime *mtime, VirtualPbp *res)
 		
 		isofs_read(fd, buf, 1024);
 		isofs_close(fd);
-		GetSFOTitleAndDiscID(vpbps[g_index].sfotitle, sizeof(vpbps[g_index].sfotitle), vpbps[g_index].discid, sizeof(vpbps[g_index].discid), buf);
+
+		GetSFOInfo(
+			vpbps[g_index].sfotitle, sizeof(vpbps[g_index].sfotitle),
+			vpbps[g_index].discid, sizeof(vpbps[g_index].discid),
+			(char*)&(vpbps[g_index].system_ver),
+			&(vpbps[g_index].opnssmp_type),
+			&(vpbps[g_index].parental_level),
+			buf
+		);
+
 		oe_free(buf);
 	}
 	else
@@ -373,6 +400,16 @@ int virtualpbp_read(SceUID fd, void *data, SceSize size)
 				memcpy(virtualsfo+0xF0, vpbps[fd].discid, sizeof(vpbps[fd].discid));
 			}
 			
+			char *ver_str = vpbps[fd].system_ver;
+			memcpy(virtualsfo+0x10C ,  ver_str , 4 );
+
+			int parental = vpbps[fd].parental_level;
+			if( parental == 0 )
+			{
+				parental = 1;
+			}
+			*(int *)(virtualsfo + 0x108 ) = parental;
+
 			base = vpbps[fd].filepointer - vpbps[fd].header[2];
 			
 			n = sizeof(virtualsfo)-(base);
@@ -401,10 +438,10 @@ int virtualpbp_read(SceUID fd, void *data, SceSize size)
 
 			sprintf(filename, "/sce_lbn0x%x_size0x%x", vpbps[fd].i0png_lba, vpbps[fd].i0png_size);
 			
-			SceUID fd = isofs_open(filename, PSP_O_RDONLY, 0);
-			isofs_lseek(fd, base, PSP_SEEK_SET);
-			isofs_read(fd, p, n);
-			isofs_close(fd);
+			SceUID fp = isofs_open(filename, PSP_O_RDONLY, 0);
+			isofs_lseek(fp, base, PSP_SEEK_SET);
+			isofs_read(fp, p, n);
+			isofs_close(fp);
 
 			remaining -= n;
 			p += n;
@@ -425,10 +462,10 @@ int virtualpbp_read(SceUID fd, void *data, SceSize size)
 
 			sprintf(filename, "/sce_lbn0x%x_size0x%x", vpbps[fd].i1pmf_lba, vpbps[fd].i1pmf_size);
 			
-			SceUID fd = isofs_open(filename, PSP_O_RDONLY, 0);
-			isofs_lseek(fd, base, PSP_SEEK_SET);
-			isofs_read(fd, p, n);
-			isofs_close(fd);
+			SceUID fp = isofs_open(filename, PSP_O_RDONLY, 0);
+			isofs_lseek(fp, base, PSP_SEEK_SET);
+			isofs_read(fp, p, n);
+			isofs_close(fp);
 
 			remaining -= n;
 			p += n;
@@ -449,10 +486,10 @@ int virtualpbp_read(SceUID fd, void *data, SceSize size)
 
 			sprintf(filename, "/sce_lbn0x%x_size0x%x", vpbps[fd].p0png_lba, vpbps[fd].p0png_size);
 			
-			SceUID fd = isofs_open(filename, PSP_O_RDONLY, 0);
-			isofs_lseek(fd, base, PSP_SEEK_SET);
-			isofs_read(fd, p, n);
-			isofs_close(fd);
+			SceUID fp = isofs_open(filename, PSP_O_RDONLY, 0);
+			isofs_lseek(fp, base, PSP_SEEK_SET);
+			isofs_read(fp, p, n);
+			isofs_close(fp);
 
 			remaining -= n;
 			p += n;
@@ -473,10 +510,10 @@ int virtualpbp_read(SceUID fd, void *data, SceSize size)
 
 			sprintf(filename, "/sce_lbn0x%x_size0x%x", vpbps[fd].p1png_lba, vpbps[fd].p1png_size);
 			
-			SceUID fd = isofs_open(filename, PSP_O_RDONLY, 0);
-			isofs_lseek(fd, base, PSP_SEEK_SET);
-			isofs_read(fd, p, n);
-			isofs_close(fd);
+			SceUID fp = isofs_open(filename, PSP_O_RDONLY, 0);
+			isofs_lseek(fp, base, PSP_SEEK_SET);
+			isofs_read(fp, p, n);
+			isofs_close(fp);
 
 			remaining -= n;
 			p += n;
@@ -497,10 +534,10 @@ int virtualpbp_read(SceUID fd, void *data, SceSize size)
 
 			sprintf(filename, "/sce_lbn0x%x_size0x%x", vpbps[fd].s0at3_lba, vpbps[fd].s0at3_size);
 			
-			SceUID fd = isofs_open(filename, PSP_O_RDONLY, 0);
-			isofs_lseek(fd, base, PSP_SEEK_SET);
-			isofs_read(fd, p, n);
-			isofs_close(fd);
+			SceUID fp = isofs_open(filename, PSP_O_RDONLY, 0);
+			isofs_lseek(fp, base, PSP_SEEK_SET);
+			isofs_read(fp, p, n);
+			isofs_close(fp);
 
 			remaining -= n;
 			p += n;
@@ -691,4 +728,18 @@ char *virtualpbp_getfilename(int i)
 
 	sceKernelSignalSema(vpsema, 1);
 	return vpbps[i].isofile;
+}
+
+int virtualpbp_get_isotype(int i)
+{
+	sceKernelWaitSema(vpsema, 1, NULL);
+
+	if (i < 0 || i >= g_index)
+	{
+		sceKernelSignalSema(vpsema, 1);
+		return 0;
+	}
+
+	sceKernelSignalSema(vpsema, 1);
+	return vpbps[i].opnssmp_type;
 }

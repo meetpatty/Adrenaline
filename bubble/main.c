@@ -207,5 +207,7 @@ int main() {
 		while (1);
 	}
 
+    // TODO: delay and re-launch
+
 	return 0;
 }

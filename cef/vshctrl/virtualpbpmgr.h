@@ -3,7 +3,7 @@
 #define __VIRTUALPBPMGR_H__
 
 #include "isofs_driver/isofs_driver.h"
-
+/*
 typedef struct
 {
 	u32  header[10];
@@ -27,6 +27,32 @@ typedef struct
 	int filepointer;
 	ScePspDateTime mtime;
 } VirtualPbp;
+*/
+typedef struct
+{
+	u32  header[10];//0
+	char isofile[ 112-16 ];//40
+	char discid[12];//152
+	char system_ver[4];
+	int parental_level;
+	int opnssmp_type;//164
+	char sfotitle[64 + 8 ];//168
+	int psfo_lba;//232
+	int psfo_size;//236
+	int i0png_lba; //240
+	int i0png_size;//244
+	int i1pmf_lba ;//248
+	int i1pmf_size;//252
+	int p0png_lba;//256
+	int p0png_size;//260
+	int p1png_lba;//264
+	int p1png_size;//268
+	int s0at3_lba;//272
+	int s0at3_size;//276
+	int filesize;//280
+	int filepointer;//284
+	ScePspDateTime mtime;//288
+} VirtualPbp;
 
 typedef struct
 {
@@ -38,7 +64,7 @@ typedef struct
 typedef struct {
 	char FileName[13];
 	char LongName[256];
-}SceFatMsDirentPrivate;
+} SceFatMsDirentPrivate;
 
 int virtualpbp_init();
 int virtualpbp_exit();
@@ -55,7 +81,7 @@ int virtualpbp_remove(int i);
 int virtualpbp_rmdir(int i);
 int virtualpbp_dread(SceUID fd, SceIoDirent *dir);
 char *virtualpbp_getfilename(int i);
-
+int virtualpbp_get_isotype(int i);
 
 #endif
 

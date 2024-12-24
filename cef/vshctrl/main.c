@@ -43,6 +43,8 @@ STMOD_HANDLER previous;
 
 AdrenalineConfig config;
 
+void *sceKernelGetGameInfo();
+
 void ClearCaches() {
 	sceKernelDcacheWritebackAll();
 	sceKernelIcacheClearAll();
@@ -113,7 +115,15 @@ int LoadExecVSHCommonPatched(int apitype, char *file, struct SceKernelLoadExecVS
 
 	int index = GetIsoIndex(file);
 	if (index >= 0) {
+		int has_pboot = 0;
 		VshCtrlSetUmdFile(virtualpbp_getfilename(index));
+
+		u32 opn_type = virtualpbp_get_isotype(index);
+		u32 *info = (u32 *)sceKernelGetGameInfo();
+		if(opn_type)
+		{
+			info[216/4] = opn_type;
+		}
 
 		int uses_prometheus = 0;
 
@@ -130,20 +140,27 @@ int LoadExecVSHCommonPatched(int apitype, char *file, struct SceKernelLoadExecVS
 
 		isofs_exit();
 
-		if (uses_prometheus) {
-			param->argp = EBOOT_OLD;
-		} else {
-			if (config.executebootbin)
-				param->argp = BOOT_BIN;
-			else
-				param->argp = EBOOT_BIN;
+
+        if(strstr( param->argp , "PBOOT.PBP") != NULL)
+        {
+            has_pboot = 1;
+        }
+
+        if (!has_pboot)
+        {
+			if (uses_prometheus) {
+				param->argp = EBOOT_OLD;
+			} else {
+				if (config.executebootbin)
+					param->argp = BOOT_BIN;
+				else
+					param->argp = EBOOT_BIN;
+			}
 		}
 
 		// Update path and key
 		file = param->argp;
 		param->key = "umdemu";
-
-		apitype = PSP_INIT_APITYPE_DISC;
 
 		// Set umdmode
 		if (config.umdmode == MODE_INFERNO) {
@@ -153,17 +170,29 @@ int LoadExecVSHCommonPatched(int apitype, char *file, struct SceKernelLoadExecVS
 		} else if (config.umdmode == MODE_NP9660) {
 			sctrlSESetBootConfFileIndex(BOOT_NP9660);
 		}
+
+		if (has_pboot)
+			apitype = PSP_INIT_APITYPE_UMDEMU_MS2;
+		else
+			apitype = PSP_INIT_APITYPE_DISC;
+
+		param->args = strlen(param->argp) + 1; //Update length
+
+		pspSdkSetK1(k1);
+
+		return sctrlKernelLoadExecVSHWithApitype(apitype, file, param);
 	}
 
 	// Enable 1.50 homebrews boot
-	if (strstr(file, "ms0:/PSP/GAME/")) {
-		KXploitString(param->argp);
+	char *perc = strchr(param->argp, '%');
+	if (perc) {
+		strcpy(perc, perc + 1);
 		file = param->argp;
+		param->args = strlen(param->argp) + 1; //Update length
 	}
 
-	param->args = strlen(param->argp) + 1; //Update length
-
 	pspSdkSetK1(k1);
+
 	return sctrlKernelLoadExecVSHWithApitype(apitype, file, param);
 }
 
@@ -850,6 +879,7 @@ void PatchGamePlugin(u32 text_addr) {
 	// Allow custom multi-disc PSX
 	_sw(0, text_addr + 0x14850);
 
+	// if check patch
 	_sw(0x00001021, text_addr + 0x20620);
 
 	if (config.hidepic0pic1) {
@@ -909,6 +939,7 @@ int module_start(SceSize args, void *argp) {
 
 	MAKE_CALL(text_addr + 0x1DC0, LoadExecVSHCommonPatched); //sceKernelLoadExecVSHMs2
 	MAKE_CALL(text_addr + 0x1BE0, LoadExecVSHCommonPatched); //sceKernelLoadExecVSHMsPboot
+	MAKE_CALL(text_addr + 0x1BB8, LoadExecVSHCommonPatched); //sceKernelLoadExecVSHUMDEMUPboot
 
 	sctrlSEGetConfig(&config);
 
