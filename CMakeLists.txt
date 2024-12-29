@@ -12,6 +12,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 add_subdirectory(kernel)
 add_subdirectory(user)
 add_subdirectory(vsh)
+add_subdirectory(usbdevice)
 add_subdirectory(bubble)
 
 
@@ -21,6 +22,7 @@ link_directories(${CMAKE_BINARY_DIR}/kernel)
 add_dependencies(${PROJECT_NAME} "kernel_all")
 add_dependencies(${PROJECT_NAME} "user_all")
 add_dependencies(${PROJECT_NAME} "vsh_all")
+add_dependencies(${PROJECT_NAME} "usbdevice_all")
 add_dependencies(adrenaline_user "kernel_all")
 
 add_custom_target(updater

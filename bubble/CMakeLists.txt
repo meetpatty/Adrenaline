@@ -43,8 +43,9 @@ vita_create_vpk(Adrenaline.vpk ${VITA_TITLEID} eboot.bin
   FILE pkg/sce_sys sce_sys
        pkg/eboot.pbp eboot.pbp
        pkg/frame.xml frame.xml
-       pkg/sce_module/usbdevice.skprx sce_module/usbdevice.skprx
+#       pkg/sce_module/usbdevice.skprx sce_module/usbdevice.skprx
        ${CMAKE_BINARY_DIR}/kernel/adrenaline_kernel.skprx sce_module/adrenaline_kernel.skprx
        ${CMAKE_BINARY_DIR}/user/adrenaline_user.suprx sce_module/adrenaline_user.suprx
        ${CMAKE_BINARY_DIR}/vsh/adrenaline_vsh.suprx sce_module/adrenaline_vsh.suprx
+       ${CMAKE_BINARY_DIR}/usbdevice/usbdevice.skprx sce_module/usbdevice.skprx
 )
