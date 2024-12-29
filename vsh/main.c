@@ -30,7 +30,6 @@
 
 #include <taihen.h>
 
-#include "utils.h"
 #include "../adrenaline_compat.h"
 
 char *sceLsdbGetName(void *a1);
