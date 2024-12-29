@@ -15,6 +15,7 @@ PSP_EXPORT_FUNC(InitUsbPatched)
 PSP_EXPORT_FUNC(ShutdownUsbPatched)
 PSP_EXPORT_FUNC(GetUsbStatusPatched)
 PSP_EXPORT_FUNC(sceUpdateDownloadSetVersionPatched)
+PSP_EXPORT_FUNC(SetDefaultNicknamePatched)
 PSP_EXPORT_END
 
 PSP_END_EXPORTS

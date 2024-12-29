@@ -806,6 +806,7 @@ void PatchVshMain(u32 text_addr) {
 		_sh(0x1000, text_addr + 0x3174A);
 	}
 
+
 	ClearCaches();	
 }
 
@@ -822,6 +823,40 @@ static inline void ascii2utf16(char *dest, const char *src)
     }
     *dest++ = '\0';
     *dest++ = '\0';
+}
+
+int SetDefaultNicknamePatched()
+{
+    int k1 = pspSdkSetK1(0);
+
+    struct RegParam reg;
+    REGHANDLE h;
+    memset(&reg, 0, sizeof(reg));
+    reg.regtype = 1;
+    reg.namelen = strlen("flash1:/registry/system");
+    reg.unk2 = 1;
+    reg.unk3 = 1;
+    strcpy(reg.name, "flash1:/registry/system");
+
+    if(sceRegOpenRegistry(&reg, 2, &h) == 0)
+    {
+        REGHANDLE hd;
+        if(!sceRegOpenCategory(h, "/CONFIG/SYSTEM", 2, &hd))
+        {
+            char* name = (char*)0xa83ff050;
+            if(sceRegSetKeyValue(hd, "owner_name", name, strlen(name)) == 0)
+            {
+                printf("Set registry value\n");
+                sceRegFlushCategory(hd);
+            }
+            sceRegCloseCategory(hd);
+        }
+        sceRegFlushRegistry(h);
+        sceRegCloseRegistry(h);
+    }
+
+    pspSdkSetK1(k1);
+    return 0;
 }
 
 void PatchSysconfPlugin(u32 text_addr) {
@@ -865,6 +900,9 @@ void PatchSysconfPlugin(u32 text_addr) {
 
 	// Ignore wait thread end failure
 	_sw(0, text_addr + 0xB264);
+
+	// Do not set nickname to PXXX on initial setup/reset
+	REDIRECT_FUNCTION(text_addr + 0x1520, MakeSyscallStub(SetDefaultNicknamePatched));
 
 	ClearCaches();
 }
