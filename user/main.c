@@ -32,6 +32,7 @@
 #include <psp2/kernel/modulemgr.h>
 #include <psp2/kernel/sysmem.h>
 #include <psp2/kernel/processmgr.h>
+#include <psp2/sysmodule.h>
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -106,6 +107,8 @@ SceUID usbdevice_modid = -1;
 AdrenalineConfig config;
 
 extern int menu_open;
+
+extern SceInt32 sceLiveAreaUpdateFrameSync(const char *formatVer,const char *frameXmlStr,SceInt32 frameXmlLen,const char *dirpathTop,SceUInt32 flag);
 
 void GetFunctions() {
   ScePspemuDivide                     = (void *)(text_addr + 0x39F0 + 0x1);
@@ -313,8 +316,8 @@ int AdrenalineCompat(SceSize args, void *argp) {
         usbdevice_modid = -1;
     } else if (request->cmd == ADRENALINE_VITA_CMD_PAUSE_POPS) {
       ScePspemuPausePops(1);
-      sceDisplayWaitVblankStart();
-      sceDisplayWaitVblankStart();
+      sceDisplayWaitVblankStartMulti(2);
+//      sceDisplayWaitVblankStart();
       SetPspemuFrameBuffer((void *)SCE_PSPEMU_FRAMEBUFFER);
       adrenaline->draw_psp_screen_in_pops = 1;
       ScePspemuWritebackCache(adrenaline, ADRENALINE_SIZE);
@@ -322,8 +325,8 @@ int AdrenalineCompat(SceSize args, void *argp) {
     } else if (request->cmd == ADRENALINE_VITA_CMD_RESUME_POPS) {
       if (!menu_open)
         ScePspemuPausePops(0);
-      sceDisplayWaitVblankStart();
-      sceDisplayWaitVblankStart();
+      sceDisplayWaitVblankStartMulti(2);
+//      sceDisplayWaitVblankStart();
       SetPspemuFrameBuffer((void *)SCE_PSPEMU_FRAMEBUFFER);
       adrenaline->draw_psp_screen_in_pops = 0;
       ScePspemuWritebackCache(adrenaline, ADRENALINE_SIZE);
@@ -334,6 +337,26 @@ int AdrenalineCompat(SceSize args, void *argp) {
     } else if (request->cmd == ADRENALINE_VITA_CMD_POWER_REBOOT) {
       scePowerRequestColdReset();
       res = 0;
+    } else if (request->cmd == ADRENALINE_VITA_CMD_PRINT) {
+      sceClibPrintf(adrenaline->printbuf);
+      res = 0;
+    } else if (request->cmd == ADRENALINE_VITA_CMD_UPDATE) {
+      res = sceSysmoduleLoadModule(SCE_SYSMODULE_LIVEAREA);
+
+      if ( res == 0 ) {
+        char frameXmlStr[512] = {0};
+        res = ReadFile("ux0:app/" ADRENALINE_TITLEID "/frame.xml", frameXmlStr, 512);
+        if (res > 0)
+        {
+            res = sceLiveAreaUpdateFrameSync(
+                "01.00",
+                frameXmlStr,
+                strlen(frameXmlStr),
+                "app0:/",
+                0);
+        }
+        sceSysmoduleUnloadModule(SCE_SYSMODULE_LIVEAREA);
+      }
     }
 
     ScePspemuKermitSendResponse(KERMIT_MODE_EXTRA_2, request, (uint64_t)res);
@@ -505,11 +528,34 @@ static int ScePspemuGetStartupPngPatched(int num, void *png_buf, int *png_size, 
   return num_startup_png;
 }
 
+
 void _start() __attribute__ ((weak, alias("module_start")));
 int module_start(SceSize args, void *argp) {
   int res;
 
+  res = sceSysmoduleLoadModule(SCE_SYSMODULE_LIVEAREA);
+
+  if ( res != 0 ) {
+      sceClibPrintf("sceSysmoduleLoadModule: 0x%08x\n", res);
+  }
+  else
+  {
+    char frameXmlStr[512] = {0};
+    res = ReadFile("ux0:app/" ADRENALINE_TITLEID "/frame.xml", frameXmlStr, 512);
+
+    if (res > 0)
+    {
+        res = sceLiveAreaUpdateFrameSync(
+            "01.00",
+            frameXmlStr,
+            strlen(frameXmlStr),
+            "app0:/",
+            0);
+    }
+    sceSysmoduleUnloadModule(SCE_SYSMODULE_LIVEAREA);
+  }
   // Init vita newlib
+
   _init_vita_newlib();
 
   // Read config

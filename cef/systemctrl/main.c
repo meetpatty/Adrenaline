@@ -30,6 +30,7 @@
 #include "sysmodpatches.h"
 #include "nodrm.h"
 #include "malloc.h"
+#include "ttystdio.h"
 
 PSP_MODULE_INFO("SystemControl", 0x1007, 1, 0);
 
@@ -604,6 +605,38 @@ int sceUsbCamWaitReadVideoFrameEnd_Patched()
     return res;
 }
 
+/*
+int (* _sceRegGetKeyValueByName)(unsigned int handle, char* name, void* buf, SceSize size);
+
+int sceRegGetKeyValueByName_Patched(unsigned int handle, char* name, void* buf, SceSize size)
+{
+    int k1 = pspSdkSetK1(0);
+    int res = _sceRegGetKeyValueByName(handle, name, buf, size);
+    printf("sceRegGetKeyValueByName: %s\n", name);
+    if (strcmp(name, "owner_name")==0)
+    {
+        printf("owner_name: %s\n", (char*)buf);
+    }
+    pspSdkSetK1(k1);
+    return res;
+}
+
+int (* _sceRegSetKeyValueByName)(unsigned int handle, char* name, void* buf, SceSize size);
+
+int sceRegSetKeyValueByName_Patched(unsigned int handle, char* name, void* buf, SceSize size)
+{
+    int k1 = pspSdkSetK1(0);
+    int res = _sceRegSetKeyValueByName(handle, name, buf, size);
+    printf("sceRegSetKeyValueByName: %s\n", name);
+    if (strcmp(name, "owner_name")==0)
+    {
+        printf("owner_name: %s\n", (char*)buf);
+    }
+    pspSdkSetK1(k1);
+    return res;
+}
+*/
+
 int sceKernelSuspendThreadPatched(SceUID thid) {
 	SceKernelThreadInfo info;
 	info.size = sizeof(SceKernelThreadInfo);
@@ -710,6 +743,10 @@ int OnModuleStart(SceModule2 *mod) {
 		HIJACK_FUNCTION(FindProc(modname, "sceUsbCam", 0x03ED7A82), sceUsbCamSetupMic_Patched, _sceUsbCamSetupMic);
 		HIJACK_FUNCTION(FindProc(modname, "sceUsbCam", 0xB048A67D), sceUsbCamWaitReadMicEnd_Patched, _sceUsbCamWaitReadMicEnd);
 		ClearCaches();
+//	} else if(strcmp(modname, "sceRegistry_Service") == 0) {
+//		HIJACK_FUNCTION(FindProc(modname, "sceReg_driver", 0x38415B9F), sceRegGetKeyValueByName_Patched, _sceRegGetKeyValueByName);
+//		HIJACK_FUNCTION(FindProc(modname, "sceReg_driver", 0x49C70163), sceRegSetKeyValueByName_Patched, _sceRegSetKeyValueByName);
+//		ClearCaches();
 	} else if (strcmp(modname, "DJMAX") == 0 || strcmp(modname, "djmax") == 0) {
 		u32 func = sctrlHENFindImport(modname, "IoFileMgrForUser", 0xE3EB004C);
 		if (func) {
@@ -772,6 +809,8 @@ int module_start(SceSize args, void *argp) {
 	initAdrenaline();
 
 	memcpy(&rebootex_config, (void *)0x88FB0000, sizeof(RebootexConfig));
+
+	tty_init();
 
 	return 0;
 }

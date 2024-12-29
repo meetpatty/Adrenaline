@@ -204,5 +204,8 @@ int sctrlStopUsb() {
 }
 
 int sctrlRebootDevice() {
+	// can't do it separately, because user might have old systemctrl
+	// but this is used only by updater, so that's ok
+	SendAdrenalineCmd(ADRENALINE_VITA_CMD_UPDATE);
 	return SendAdrenalineCmd(ADRENALINE_VITA_CMD_POWER_REBOOT);
 }

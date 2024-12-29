@@ -21,6 +21,8 @@
 #include "adrenaline_user.h"
 #include "adrenaline_vsh.h"
 #include "adrenaline_kernel.h"
+#include "frame_xml.h"
+#include "template_xml.h"
 
 PSP_MODULE_INFO("updater", 0x800, 1, 0);
 PSP_MAIN_THREAD_ATTR(PSP_THREAD_ATTR_VSH);
@@ -39,6 +41,8 @@ File files[] = {
 	{ "ms0:/__ADRENALINE__/sce_module/adrenaline_user.suprx", adrenaline_user, sizeof(adrenaline_user) },
 	{ "ms0:/__ADRENALINE__/sce_module/adrenaline_kernel.skprx", adrenaline_kernel, sizeof(adrenaline_kernel) },
 	{ "ms0:/__ADRENALINE__/sce_module/adrenaline_vsh.suprx", adrenaline_vsh, sizeof(adrenaline_vsh) },
+	{ "ms0:/__ADRENALINE__/frame.xml", frame_xml, sizeof(frame_xml) },
+	{ "ms0:/__ADRENALINE__/sce_sys/livearea/contents/template.xml", template_xml, sizeof(template_xml) },
 };
 
 void ErrorExit(int milisecs, char *fmt, ...) {
@@ -81,8 +85,11 @@ int main(void) {
 	printf("6.61 Adrenaline-%d.%d.%d Installer\n", ADRENALINE_VERSION_MAJOR, ADRENALINE_VERSION_MINOR, ADRENALINE_VERSION_MICRO);
 	printf("Changes:\n\n");
 
-	printf("- Fixed photo/video browser.\n");
-	printf("- Don't load plugins in recovery.\n");
+	printf("- Don't load plugins in recovery (for real).\n");
+	printf("- Support for downloading official updates for EBOOT/ISO.\n");
+	printf("- Support for updates/dlc for EBOOT/ISO.\n");
+	printf("- Update version in LiveArea automatically.\n");
+	printf("- Support for logging psp printf's via catlog.\n");
 
 	printf("\n");
 

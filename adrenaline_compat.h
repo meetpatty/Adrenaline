@@ -145,6 +145,8 @@ enum AdrenalineVitaCommands {
 	ADRENALINE_VITA_CMD_RESUME_POPS,
 	ADRENALINE_VITA_CMD_POWER_SHUTDOWN,
 	ADRENALINE_VITA_CMD_POWER_REBOOT,
+	ADRENALINE_VITA_CMD_PRINT,
+	ADRENALINE_VITA_CMD_UPDATE,
 };
 
 enum AdrenalineVitaResponse {
@@ -169,6 +171,8 @@ typedef struct {
 	int vita_cmd;
 	int psp_response;
 	int vita_response;
+
+	char printbuf[1024];
 } SceAdrenaline;
 
 #define ADRENALINE_SIZE 0x2000

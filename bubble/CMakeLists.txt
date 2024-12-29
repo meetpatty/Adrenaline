@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.2)
 
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   if(DEFINED ENV{VITASDK})
@@ -40,11 +40,9 @@ vita_create_self(eboot.bin adrenaline UNSAFE)
 vita_create_vpk(Adrenaline.vpk ${VITA_TITLEID} eboot.bin
   VERSION ${VITA_VERSION}
   NAME ${VITA_APP_NAME}
-  FILE pkg/sce_sys/icon0.png sce_sys/icon0.png
-       pkg/sce_sys/livearea/contents/bg.png sce_sys/livearea/contents/bg.png
-       pkg/sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/startup.png
-       pkg/sce_sys/livearea/contents/template.xml sce_sys/livearea/contents/template.xml
+  FILE pkg/sce_sys sce_sys
        pkg/eboot.pbp eboot.pbp
+       pkg/frame.xml frame.xml
        pkg/sce_module/usbdevice.skprx sce_module/usbdevice.skprx
        ${CMAKE_BINARY_DIR}/kernel/adrenaline_kernel.skprx sce_module/adrenaline_kernel.skprx
        ${CMAKE_BINARY_DIR}/user/adrenaline_user.suprx sce_module/adrenaline_user.suprx
