@@ -35,6 +35,14 @@ ux0:app/PSPEMUCFW/sce_module/adrenaline_kernel.skprx
 Changelog
 ---------
 
+### Changelog v7.1.3
+- Don't load plugins in recovery (for real).
+- Support for downloading official updates for EBOOT/ISO.
+- Support for updates/dlc for EBOOT/ISO.
+- Support for autoboot /PSP/GAME/EBOOT.PBP.
+- Update version in LiveArea automatically.
+- Support for logging psp printf's via catlog.
+
 ### Changelog v7.1.2
 - Fixed photo/video browser.
 - Don't load plugins in recovery.
