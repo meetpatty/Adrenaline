@@ -1,0 +1,10 @@
+- Provide source for psp-packer
+- Provide source for galaxy
+- Provide source for march33
+- Automate frame.xml / template.xml versioning
+- Implement ISO (and updates) version display
+- UMD Video
+- ADHOC shenenigans
+- Redesign/rewrite recovery
+- Fix pspemu resampler on vita side (drop mic patches)
+- Apply per-game flags/fixes
