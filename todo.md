@@ -8,3 +8,4 @@
 - Redesign/rewrite recovery
 - Fix pspemu resampler on vita side (drop mic patches)
 - Apply per-game flags/fixes
+- Apply custom color on initial setup
