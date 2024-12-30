@@ -161,7 +161,7 @@ int sceKernelStartModulePatched(SceUID modid, SceSize argsize, void *argp, int *
 
 	if (mod != NULL) {
 		if (strcmp(mod->modname, "vsh_module") == 0) {
-			if (config.skiplogo) {
+			if (config.skiplogo || config.startupprog) {
 				static u32 vshmain_args[0x100];
 				memset(vshmain_args, 0, sizeof(vshmain_args));
 
@@ -176,6 +176,21 @@ int sceKernelStartModulePatched(SceUID modid, SceSize argsize, void *argp, int *
 
 				argsize = sizeof(vshmain_args);
 				argp = vshmain_args;
+
+				if( config.startupprog && argsize == 0)
+				{
+					struct SceKernelLoadExecVSHParam param;
+					memset(&param, 0, sizeof(param));
+					param.size = sizeof(param);
+					param.args = sizeof("ms0:/PSP/GAME/BOOT/EBOOT.PBP");
+					param.argp = "ms0:/PSP/GAME/BOOT/EBOOT.PBP";
+					param.key = "game";
+					param.vshmain_args_size = 0x0400;
+					param.vshmain_args = vshmain_args;
+
+					sctrlKernelLoadExecVSHMs2("ms0:/PSP/GAME/BOOT/EBOOT.PBP", &param);
+				}
+
 			}
 		} else if (!plugindone) {
 			char *waitmodule;
