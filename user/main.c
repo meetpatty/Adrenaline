@@ -540,18 +540,28 @@ int module_start(SceSize args, void *argp) {
   }
   else
   {
-    char frameXmlStr[512] = {0};
-    res = ReadFile("ux0:app/" ADRENALINE_TITLEID "/frame.xml", frameXmlStr, 512);
-
-    if (res > 0)
-    {
-        res = sceLiveAreaUpdateFrameSync(
+    char frameXmlStr[512];
+    snprintf(
+        frameXmlStr,
+        512,
+        "<frame id=\"frame2\">"
+            "<liveitem>"
+                "<text valign=\"bottom\" align=\"left\" text-align=\"left\" text-valign=\"bottom\" line-space=\"3\" ellipsis=\"on\">"
+                    "<str color=\"#ffffff\" size=\"50\" bold=\"on\" shadow=\"on\">Adrenaline %d.%d.%d</str>"
+                "</text>"
+            "</liveitem>"
+        "</frame>",
+        ADRENALINE_VERSION_MAJOR,
+        ADRENALINE_VERSION_MINOR,
+        ADRENALINE_VERSION_MICRO
+    );
+    res = sceLiveAreaUpdateFrameSync(
             "01.00",
             frameXmlStr,
             strlen(frameXmlStr),
             "app0:/",
-            0);
-    }
+            0
+    );
     sceSysmoduleUnloadModule(SCE_SYSMODULE_LIVEAREA);
   }
   // Init vita newlib
