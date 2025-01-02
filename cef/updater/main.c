@@ -85,12 +85,7 @@ int main(void) {
 	printf("6.61 Adrenaline-%d.%d.%d Installer\n", ADRENALINE_VERSION_MAJOR, ADRENALINE_VERSION_MINOR, ADRENALINE_VERSION_MICRO);
 	printf("Changes:\n\n");
 
-	printf("- Don't load plugins in recovery (for real).\n");
-	printf("- Support for downloading official updates for EBOOT/ISO.\n");
-	printf("- Support for updates/dlc for EBOOT/ISO.\n");
-	printf("- Support for autoboot /PSP/GAME/EBOOT.PBP.\n");
-	printf("- Update version in LiveArea automatically.\n");
-	printf("- Support for logging psp printf's via catlog.\n");
+	printf("- Revert fancier recovery for now (breaks installer).\n");
 
 	printf("\n");
 

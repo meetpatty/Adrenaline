@@ -35,6 +35,9 @@ ux0:app/PSPEMUCFW/sce_module/adrenaline_kernel.skprx
 Changelog
 ---------
 
+### Changelog v7.1.4
+- Revert fancier recovery for now (breaks installer)
+
 ### Changelog v7.1.3
 - Don't load plugins in recovery (for real).
 - Support for downloading official updates for EBOOT/ISO.
