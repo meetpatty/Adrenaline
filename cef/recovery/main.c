@@ -218,7 +218,7 @@ void Exit() {
 }
 
 int main(int argc, char *argv[]) {
-	rDebugScreenInit();
+	pspDebugScreenInit();
 
 	SceIoStat stat;
 	memset(&stat, 0, sizeof(SceIoStat));

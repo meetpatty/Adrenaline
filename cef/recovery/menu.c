@@ -35,7 +35,7 @@ u32 select_color = 0x00FF0000;
 
 void MenuResetSelection() {
 	sel = 0;
-	rDebugScreenClear();
+	pspDebugScreenClear();
 }
 
 void MenuReset(Entry *entries, int size_entries, char *title, int x) {
@@ -67,57 +67,51 @@ void ChangeValue(int interval) {
 	if (menu_struct.entries[sel].function) {
 		if (strcmp(menu_struct.entries[sel].name, "Back") == 0) {
 			printf(" > Back...");
-			sceKernelDelayThread(1 * 300 * 1000);
+			sceKernelDelayThread(1 * 1000 * 1000);
 		}
 		menu_struct.entries[sel].function(sel);
 	}
 
 	if (menu_struct.entries[sel].options) {
 		sceKernelDelayThread(100 * 1000);
-		rDebugScreenClear();
+		pspDebugScreenClear();
 	}
 }
 
 void MenuDisplayCtrl() {
-
-	rDebugScreenSetTextColor(select_color, 0);
-	rDebugScreenSetXY(0, 1);
-	printf("Adrenaline Recovery Menu %d\n%s", sel, menu_struct.title);
+	pspDebugScreenSetTextColor(select_color);
+	pspDebugScreenSetXY(0, 1);
+	printf("Adrenaline Recovery Menu\n%s", menu_struct.title);
 
 	int y = 0;
 
 	int i;
 	for (i = 0; i < menu_struct.n_entries; i++) {
-		rDebugScreenSetXY(menu_struct.x, 5 + i + y);
+		pspDebugScreenSetXY(menu_struct.x, 5 + i + y);
 
 		if (strcmp(menu_struct.entries[i].name, "Back") == 0) {
 			y = 1;
 		}
 
-		rDebugScreenClearLineWithColor(sel == i ? 0x181818 : 0);
-
-		rDebugScreenSetTextColor(sel == i ? select_color : 0xFFFFFF, sel == i ? 0x181818 : 0);
+		pspDebugScreenSetTextColor(sel == i ? select_color : 0xFFFFFF);
 		printf(menu_struct.entries[i].name);
 
 		if (menu_struct.entries[i].options) {
 			int max = menu_struct.entries[i].size_options / sizeof(char **);
-			rDebugScreenSetXY(menu_struct.x + (68 - 22), 5 + i + y);
-			rDebugScreenSetTextColor((*menu_struct.entries[i].value) == 0 ? 0x00FF00 : 0x0000FF, sel == i ? 0x181818 : 0);
+			pspDebugScreenSetXY(menu_struct.x + (68 - 22), 5 + i + y);
 			printf("%14s", menu_struct.entries[i].options[(*menu_struct.entries[i].value) % max]);
 		}
 
 		printf("\n");
 	}
 
-
-	rDebugScreenSetTextColor(select_color, 0);
-	rDebugScreenSetXY(1, 29);
+	pspDebugScreenSetTextColor(select_color);
+	pspDebugScreenSetXY(1, 29);
 
 	for (i = 0; i < 67; i++)
 		printf("*");
 
 	printf("\n");
-
 
 	SceCtrlData pad;
 	sceCtrlReadBufferPositive(&pad, 1);
