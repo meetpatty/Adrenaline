@@ -19,7 +19,9 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#define printf pspDebugScreenPrintf
+#include "debugscreen.h"
+
+#define printf rDebugScreenPrintf
 
 extern AdrenalineConfig config;
 extern u32 select_color;
