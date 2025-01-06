@@ -137,13 +137,16 @@ void Exit()
 
 int main(int argc, char *argv[])
 {
-  VGraphInit();
 
   SceIoStat stat;
   memset(&stat, 0, sizeof(SceIoStat));
   if (sceIoGetstat("ms0:/__ADRENALINE__/flash0", &stat) < 0)
+  {
+    VGraphInit(0);
     Installer();
+  }
 
+  VGraphInit(1);
   sctrlSEGetConfig(&config);
   SetRecoveryColor(config.recoverycolor);
 

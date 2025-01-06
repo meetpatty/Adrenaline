@@ -1,9 +1,3 @@
-/*****************************************
- * Recovery - mydebug                    *
- *                      by harleyg :)    *
- *****************************************/
-
-
 #include <stdio.h>
 #include <psptypes.h>
 #include <pspkernel.h>
@@ -14,13 +8,14 @@
 #define PSP_SCREEN_WIDTH 480
 #define PSP_SCREEN_HEIGHT 272
 #define PSP_LINE_SIZE 512
-#define PSP_PIXEL_FORMAT 2
+#define PSP_PIXEL_FORMAT 3
 
 static int X = 0, Y = 0;
 static const int MX=60, MY=34;
 static u32 bg_col = 0x00000000, fg_col = 0x00FFFFFF, fb_col = 0;
 
-static u16* g_vram_base = (u32 *) 0x04000000;
+static u32* g_vram_base[2] = {(u32 *) 0x04000000, (u32 *) 0x04100000};
+static u8 cur_buf = 0;
 static int g_vram_offset = 0;
 
 static int init = 0;
@@ -191,31 +186,17 @@ static uint32_t vga_palette[256] = {
   0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0x00000000
 };
 
-static u16 c32to16(u32 color)
-{
-  int r, g, b, a;
-
-  a = (color >> 28) & 0xF; 
-  b = (color >> 20) & 0xF;
-  g = (color >> 12) & 0xF;
-  r = (color >> 4) & 0xF;
-
-  return (a << 12) | r | (g << 4) | (b << 8);
-}
-
-
 static void clear_screen(u32 color)
 {
   int x;
 
   if (!init) return;
 
-  u16 *vram = g_vram_base + (g_vram_offset>>1);
-  u16 c = c32to16(color);
+  u32 *vram = g_vram_base[cur_buf] + (g_vram_offset>>1);
 
   for(x = 0; x < (PSP_LINE_SIZE * PSP_SCREEN_HEIGHT); x++)
   {
-    *vram++ = c;
+    *vram++ = color;
   }
 }
 
@@ -225,14 +206,12 @@ static void clear_line(int Y, u32 color)
 
   if (!init) return;
 
-  u16 *vram = g_vram_base + (g_vram_offset>>1);
+  u32 *vram = g_vram_base[cur_buf] + (g_vram_offset>>1);
   vram += ( Y * PSP_LINE_SIZE) * 8;
-
-  u16 c = c32to16(color);
 
   for(x = 0; x < (PSP_LINE_SIZE * 8); x++)
   {
-    *vram++ = c;
+    *vram++ = color;
   }
 }
 
@@ -241,12 +220,12 @@ static void put_char(int x, int y, u32 color, u8 ch)
   int i,j, l;
   u8  *font;
   u32  pixel;
-  u16 *vram_ptr;
-  u16 *vram;
+  u32 *vram_ptr;
+  u32 *vram;
 
   if (!init) return;
 
-  vram = g_vram_base + (g_vram_offset>>1) + x;
+  vram = g_vram_base[cur_buf] + (g_vram_offset>>1) + x;
   vram += (y * PSP_LINE_SIZE);
 
   font = &vgafont[ (int)ch * 8];
@@ -264,20 +243,23 @@ static void put_char(int x, int y, u32 color, u8 ch)
         pixel = fb_col;
       }
 
-      *vram_ptr++ = c32to16(pixel);
+      *vram_ptr++ = pixel;
     }
     vram += PSP_LINE_SIZE;
   }
 }
 
-void VGraphInit()
+void VGraphInit(u8 doublebuf)
 {
   X = Y = 0;
   /* Place vram in uncached memory */
-  g_vram_base = (void *)(0x40000000 | (u32)sceGeEdramGetAddr());
+  g_vram_base[0] = (void *)(0x40000000 | (u32)sceGeEdramGetAddr());
+  g_vram_base[1] = (void *)(0x40000000 | ((u32)sceGeEdramGetAddr()+0x100000));
   g_vram_offset = 0;
   sceDisplaySetMode(0, PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT);
-  sceDisplaySetFrameBuf((void *)g_vram_base, PSP_LINE_SIZE, PSP_PIXEL_FORMAT, 1);
+  sceDisplaySetFrameBuf((void *)g_vram_base[cur_buf], PSP_LINE_SIZE, PSP_PIXEL_FORMAT, 1);
+  if (doublebuf)
+    cur_buf = 1;
   clear_screen(bg_col);
   init = 1;
 }
@@ -380,4 +362,10 @@ void VGraphClear()
 {
   VGraphGoto(0,0);
   clear_screen(bg_col);
+}
+
+void VGraphSwap()
+{
+  sceDisplaySetFrameBuf((void *)g_vram_base[cur_buf], PSP_LINE_SIZE, PSP_PIXEL_FORMAT, 1);
+  cur_buf = (cur_buf) ? 0 : 1;
 }

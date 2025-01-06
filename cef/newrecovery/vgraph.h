@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-void VGraphInit(void);
+void VGraphInit(u8 doublebuf);
 
 void VGraphPrintf(const char *fmt, ...) __attribute__((format(printf,1,2)));
 void VGraphPutc(u8 ch);
@@ -22,6 +22,8 @@ void VGraphGoto(int x, int y);
 
 void VGraphClear(void);
 void VGraphClearLine(u32 color);
+
+void VGraphSwap();
 
 #ifdef __cplusplus
 }

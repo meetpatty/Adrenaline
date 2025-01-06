@@ -477,16 +477,19 @@ void ShowDialog(char* message)
     VGraphPrintf("\xCD");
   VGraphPrintf("\xBC");
 
+  VGraphSwap();
+
   WaitPress(PSP_CTRL_CROSS);
 }
 
 void MenuCtrl()
 {
-  u32 key = 0;
+  u32 key = ReadKey();
+/*
   do {
     key = ReadKey();
     sceKernelDelayThread(1000);
-  } while(!key);
+  } while(!key);*/
 
   if ((key & PSP_CTRL_CROSS) || (key &  PSP_CTRL_RIGHT))
   {
@@ -568,6 +571,7 @@ void MenuLoop()
   }
 
   DrawFooter();
+  VGraphSwap();
 
   MenuCtrl();
 }
