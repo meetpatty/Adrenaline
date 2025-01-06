@@ -694,3 +694,17 @@ int virtualpbp_get_isotype(int i)
 	sceKernelSignalSema(vpsema, 1);
 	return vpbps[i].opnssmp_type;
 }
+
+char *virtualpbp_getdiscid(int i)
+{
+	sceKernelWaitSema(vpsema, 1, NULL);
+	
+	if (i < 0 || i >= g_index)
+	{
+		sceKernelSignalSema(vpsema, 1);
+		return NULL;
+	}
+
+	sceKernelSignalSema(vpsema, 1);
+	return vpbps[i].discid;
+}

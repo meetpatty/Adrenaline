@@ -482,6 +482,16 @@ SceUID sceIoOpenPatched(const char *file, int flags, SceMode mode) {
 
 	int index = GetIsoIndex(file);
 	if (index >= 0) {
+		if (strcmp(strrchr(file,'/')+1, "DOCUMENT.DAT") == 0)
+		{
+			sprintf(file, "%s", virtualpbp_getfilename(index));
+			((char*)file)[strlen(file)-3] = 'D';
+			((char*)file)[strlen(file)-2] = 'A';
+			((char*)file)[strlen(file)-1] = 'T';
+			pspSdkSetK1(k1);
+			return sceIoOpen(file, flags, mode);
+		}
+
 		int res = virtualpbp_open(index);	
 		pspSdkSetK1(k1);
 		return res;
@@ -518,7 +528,9 @@ int sceIoReadPatched(SceUID fd, void *data, SceSize size) {
 	pspSdkSetK1(k1);
 
 	if (res < 0)
+	{
 		return sceIoRead(fd, data, size);
+	}
 
 	return res;
 }
@@ -557,9 +569,23 @@ int sceIoLseek32Patched(SceUID fd, int offset, int whence) {
 
 int sceIoGetstatPatched(const char *file, SceIoStat *stat) {
 	int k1 = pspSdkSetK1(0);
-
 	int index = GetIsoIndex(file);
 	if (index >= 0) {
+		if (strcmp(strrchr(file,'/')+1, "DOCUMENT.DAT") == 0)
+		{
+			sprintf(file, "%s", virtualpbp_getfilename(index));
+			((char*)file)[strlen(file)-3] = 'D';
+			((char*)file)[strlen(file)-2] = 'A';
+			((char*)file)[strlen(file)-1] = 'T';
+			pspSdkSetK1(k1);
+			return sceIoGetstat(file, stat);
+		}
+
+		if (strcmp(strrchr(file,'/')+1, "DOCINFO.EDAT") == 0)
+		{
+			pspSdkSetK1(k1);
+			return 0x80010002; // ENOENT
+		}
 		int res = virtualpbp_getstat(index, stat);
 		pspSdkSetK1(k1);
 		return res;

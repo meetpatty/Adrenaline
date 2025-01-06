@@ -82,6 +82,7 @@ int virtualpbp_rmdir(int i);
 int virtualpbp_dread(SceUID fd, SceIoDirent *dir);
 char *virtualpbp_getfilename(int i);
 int virtualpbp_get_isotype(int i);
+char *virtualpbp_getdiscid(int i);
 
 #endif
 
