@@ -318,7 +318,7 @@ int VGraphPrintData(const char *buff, int size)
           Y++;
           if (Y == MY)
             Y = 0;
-          clear_line(Y, bg_col);
+//          clear_line(Y, bg_col);
         }
     }
   }
@@ -336,7 +336,7 @@ void VGraphPutc(u8 ch)
     Y++;
     if (Y == MY)
       Y = 0;
-    clear_line(Y, bg_col);
+//    clear_line(Y, bg_col);
   }
 }
 

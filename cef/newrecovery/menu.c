@@ -201,7 +201,7 @@ Theme themes[] = {
     .select_text_bg =0xF,
     .panel_text = 0xF,
     .panel_bg = 0x0,
-    .panel_select_text = 0xF,
+    .panel_select_text = 0x4,
     .panel_select_bg = 0x0,
     .dialog_text = 0x0,
     .dialog_bg = 0xF,
@@ -218,7 +218,7 @@ Theme themes[] = {
     .select_text_bg =0x4,
     .panel_text = 0x4,
     .panel_bg = 0x0,
-    .panel_select_text = 0x4,
+    .panel_select_text = 0xF,
     .panel_select_bg = 0x0,
     .dialog_text = 0x0,
     .dialog_bg = 0x4,
@@ -235,7 +235,7 @@ Theme themes[] = {
     .select_text_bg =0x2,
     .panel_text = 0x2,
     .panel_bg = 0x0,
-    .panel_select_text = 0x2,
+    .panel_select_text = 0xF,
     .panel_select_bg = 0x0,
     .dialog_text = 0x0,
     .dialog_bg = 0x2,
@@ -283,11 +283,11 @@ Entry general_entries[] = {
   { "Skip gameboot", NULL, disenabled, sizeof(disenabled), &config.skipgameboot },
   { "Hide corrupt icons", NULL, disenabled, sizeof(disenabled), &config.hidecorrupt },
   { "Hide MAC address", NULL, disenabled, sizeof(disenabled), &config.hidemacaddr },
-  { "Autorun program at /PSP/GAME/BOOT/EBOOT.PBP", NULL, disenabled, sizeof(disenabled), &config.startupprog },
+  { "Autorun /PSP/GAME/BOOT/EBOOT.PBP", NULL, disenabled, sizeof(disenabled), &config.startupprog },
   { "UMD mode", NULL, umdmodes, sizeof(umdmodes), &config.umdmode },
   { "Fake region", NULL, regions, sizeof(regions), &config.fakeregion },
   { "Hide DLC's in game menu", NULL, disenabled, sizeof(disenabled), &config.hidedlcs },
-  { "Hide PIC0.PNG and PIC1.PNG in game menu", NULL, disenabled, sizeof(disenabled), &config.hidepic0pic1 },
+  { "Hide PIC0/PIC1.PNG in game menu", NULL, disenabled, sizeof(disenabled), &config.hidepic0pic1 },
   { "Use extended colors", NULL, extendedcolors, sizeof(extendedcolors), &config.useextendedcolors },
   { "Recovery color", SetRecoveryColor, theme_names, sizeof(theme_names), &config.recoverycolor },
   { "Use Sony PSP OSK", NULL, disenabled, sizeof(disenabled), &config.usesonypsposk },
@@ -372,7 +372,8 @@ void ChangeValue(int interval)
 void DrawHeader()
 {
   VGraphSetBackColor(themes[theme].main_bg);
-  VGraphClear();
+//  VGraphClear();
+  VGraphGoto(0, 0);
 
   VGraphClearLine(themes[theme].panel_bg);
 
@@ -481,7 +482,11 @@ void ShowDialog(char* message)
 
 void MenuCtrl()
 {
-  u32 key = ReadKey();
+  u32 key = 0;
+  do {
+    key = ReadKey();
+    sceKernelDelayThread(1000);
+  } while(!key);
 
   if ((key & PSP_CTRL_CROSS) || (key &  PSP_CTRL_RIGHT))
   {
