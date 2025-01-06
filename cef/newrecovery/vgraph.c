@@ -14,13 +14,13 @@
 #define PSP_SCREEN_WIDTH 480
 #define PSP_SCREEN_HEIGHT 272
 #define PSP_LINE_SIZE 512
-#define PSP_PIXEL_FORMAT 3
+#define PSP_PIXEL_FORMAT 2
 
 static int X = 0, Y = 0;
 static const int MX=60, MY=34;
 static u32 bg_col = 0x00000000, fg_col = 0x00FFFFFF, fb_col = 0;
 
-static u32* g_vram_base = (u32 *) 0x04000000;
+static u16* g_vram_base = (u32 *) 0x04000000;
 static int g_vram_offset = 0;
 
 static int init = 0;
@@ -191,17 +191,31 @@ static uint32_t vga_palette[256] = {
   0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0x00000000
 };
 
+static u16 c32to16(u32 color)
+{
+  int r, g, b, a;
+
+  a = (color >> 28) & 0xF; 
+  b = (color >> 20) & 0xF;
+  g = (color >> 12) & 0xF;
+  r = (color >> 4) & 0xF;
+
+  return (a << 12) | r | (g << 4) | (b << 8);
+}
+
+
 static void clear_screen(u32 color)
 {
   int x;
 
   if (!init) return;
 
-  u32 *vram = g_vram_base + (g_vram_offset>>2);
+  u16 *vram = g_vram_base + (g_vram_offset>>1);
+  u16 c = c32to16(color);
 
   for(x = 0; x < (PSP_LINE_SIZE * PSP_SCREEN_HEIGHT); x++)
   {
-    *vram++ = color; 
+    *vram++ = c;
   }
 }
 
@@ -211,12 +225,14 @@ static void clear_line(int Y, u32 color)
 
   if (!init) return;
 
-  u32 *vram = g_vram_base + (g_vram_offset>>2);
+  u16 *vram = g_vram_base + (g_vram_offset>>1);
   vram += ( Y * PSP_LINE_SIZE) * 8;
+
+  u16 c = c32to16(color);
 
   for(x = 0; x < (PSP_LINE_SIZE * 8); x++)
   {
-    *vram++ = color;
+    *vram++ = c;
   }
 }
 
@@ -225,12 +241,12 @@ static void put_char(int x, int y, u32 color, u8 ch)
   int i,j, l;
   u8  *font;
   u32  pixel;
-  u32 *vram_ptr;
-  u32 *vram;
+  u16 *vram_ptr;
+  u16 *vram;
 
   if (!init) return;
 
-  vram = g_vram_base + (g_vram_offset>>2) + x;
+  vram = g_vram_base + (g_vram_offset>>1) + x;
   vram += (y * PSP_LINE_SIZE);
 
   font = &vgafont[ (int)ch * 8];
@@ -248,7 +264,7 @@ static void put_char(int x, int y, u32 color, u8 ch)
         pixel = fb_col;
       }
 
-      *vram_ptr++ = pixel; 
+      *vram_ptr++ = c32to16(pixel);
     }
     vram += PSP_LINE_SIZE;
   }
