@@ -32,8 +32,19 @@ Adrenaline has been redesigned in `6.61 Adrenaline-6`, so you'd need to launch A
 ux0:app/PSPEMUCFW/sce_module/adrenaline_kernel.skprx
 ```
 
+Manuals for ISO games
+---------------------
+Adrenaline now supports displaying manuals for ISO-format games:
+1. Obtain/create DOCUMENT.DAT for you game.
+2. Rename it to <your_iso_name>.DAT and place next to it.
+E.g.: if you have `ux0:/pspemu/ISO/MYGAME.iso` name your manual `ux0:/pspemu/ISO/MYGAME.DAT`
+
 Changelog
 ---------
+
+### Changelog v7.1.5
+- New recovery/installer.
+- Support for displaying manuals for ISO-format games.
 
 ### Changelog v7.1.4
 - Revert fancier recovery for now (breaks installer)

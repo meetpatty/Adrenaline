@@ -85,7 +85,8 @@ int main(void) {
 	printf("6.61 Adrenaline-%d.%d.%d Installer\n", ADRENALINE_VERSION_MAJOR, ADRENALINE_VERSION_MINOR, ADRENALINE_VERSION_MICRO);
 	printf("Changes:\n\n");
 
-	printf("- Revert fancier recovery for now (breaks installer).\n");
+	printf("- New recovery/installer.\n");
+	printf("- Support for displaying manuals for ISO-format games.\n");
 
 	printf("\n");
 
