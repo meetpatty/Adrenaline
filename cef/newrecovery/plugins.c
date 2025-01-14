@@ -33,7 +33,7 @@ PluginsInfo plugins_info[MAX_PLUGINS];
 
 char plugins_path[MAX_PLUGINS][64]; //8 vsh, 8 game, 8 pops
 
-Entry plugins_tool_entries[MAX_PLUGINS + 1]; //+ Back entry
+Entry plugins_tool_entries[MAX_PLUGINS + 1];
 
 int n_vsh = 0, n_game = 0, n_pops = 0;
 
@@ -157,8 +157,6 @@ int ReadPlugins(char *mode, int get_name, int n) {
 void SetPlugins(int sel) {
 	char *mode = NULL;
 	int start = 0, end = 0;
-
-	sel -= 1;
 
 	if (sel >= 0 && sel < n_vsh) {
 		mode = "vsh";
