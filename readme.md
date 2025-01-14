@@ -42,6 +42,9 @@ E.g.: if you have `ux0:/pspemu/ISO/MYGAME.iso` name your manual `ux0:/pspemu/ISO
 Changelog
 ---------
 
+### Changelog v7.1.6
+- Fix recovery plugin manager.
+
 ### Changelog v7.1.5
 - New recovery/installer.
 - Support for displaying manuals for ISO-format games.
