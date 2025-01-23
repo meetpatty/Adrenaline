@@ -106,7 +106,11 @@ static int sceCompatSecSetSSRAMAclPatched() {
                module_nid == 0x71BF9CC5 ||
                module_nid == 0x7C185186 ||
                module_nid == 0x52DFE3A7 ||
-               module_nid == 0xE0E3AA51) { // 3.65-3.70 retail
+               module_nid == 0xE0E3AA51 ||
+               module_nid == 0x2F5A9526 ||
+               module_nid == 0x8BD7640C ||
+               module_nid == 0x6E2F2888 ||
+               module_nid == 0x0ED0A986) { // 3.65-3.74 retail
       ksceKernelMemcpyKernelToUser(0x70602D70, &a, sizeof(uint32_t));
       ksceKernelCpuDcacheWritebackRange((void *)0x70602D70, sizeof(uint32_t));
     }
@@ -181,6 +185,10 @@ int module_start(SceSize args, void *argp) {
     case 0x7C185186: // 3.68 retail
     case 0x52DFE3A7: // 3.69 retail
     case 0xE0E3AA51: // 3.70 retail
+    case 0x2F5A9526: // 3.71 retail
+    case 0x8BD7640C: // 3.72 retail
+    case 0x6E2F2888: // 3.73 retail
+    case 0x0ED0A986: // 3.74 retail
       hooks[n_hooks++] = taiHookFunctionOffsetForKernel(KERNEL_PID, &sceCompatSecSetSSRAMAclRef, info.modid, 0, 0x2AE8, 1, sceCompatSecSetSSRAMAclPatched);
       break;
   }
