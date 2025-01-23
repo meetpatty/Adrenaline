@@ -47,6 +47,11 @@ int ScePspemuInitTitleSpecificInfoPatched(const char *titleid, SceUID uid) {
 
     info = (uint32_t *)(data_addr + 0x1156550);
     unk = (uint32_t *)(data_addr + 0x115654c);
+  } else if (module_nid == 0xEA8C1AE2 || module_nid == 0x5459B715) { // 3.71-3.74 retail
+    snprintf((char *)(data_addr + 0x11C850C), 0x80, "ms0:PSP/GAME/%s/__sce_menuinfo", titleid);
+
+    info = (uint32_t *)(data_addr + 0x1156C50);
+    unk = (uint32_t *)(data_addr + 0x1156C4C);
   } else {
     return -1;
   }
