@@ -130,6 +130,16 @@ void GetFunctions() {
     ScePspemuPausePops                  = (void *)(text_addr + 0x300D4 + 0x1);
     ScePspemuInitPops                   = (void *)(text_addr + 0x3068C + 0x1);
     ScePspemuInitPocs                   = (void *)(text_addr + 0x227D0 + 0x1);
+  } else if (module_nid == 0xEA8C1AE2) { // 3.71 retail
+    ScePspemuSetDisplayConfig           = (void *)(text_addr + 0x20F24 + 0x1);
+    ScePspemuPausePops                  = (void *)(text_addr + 0x301A4 + 0x1);
+    ScePspemuInitPops                   = (void *)(text_addr + 0x3075C + 0x1);
+    ScePspemuInitPocs                   = (void *)(text_addr + 0x228a0 + 0x1);
+  } else if (module_nid == 0x5459B715) { // 3.72-3.74 retail
+    ScePspemuSetDisplayConfig           = (void *)(text_addr + 0x20EC4 + 0x1);
+    ScePspemuPausePops                  = (void *)(text_addr + 0x30144 + 0x1);
+    ScePspemuInitPops                   = (void *)(text_addr + 0x306FC + 0x1);
+    ScePspemuInitPocs                   = (void *)(text_addr + 0x22844 + 0x1);
   }
 }
 
@@ -859,6 +869,238 @@ int module_start(SceSize args, void *argp) {
     uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x20740, &movs_a1_0_nop_opcode, sizeof(movs_a1_0_nop_opcode));
     uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x20852, &movs_a1_0_nop_opcode, sizeof(movs_a1_0_nop_opcode));
     uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x301F0, &movs_a1_0_nop_opcode, sizeof(movs_a1_0_nop_opcode));
+  } else if (module_nid == 0xEA8C1AE2) { // 3.71 retail
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuInitTitleSpecificInfoRef, tai_info.modid, 0, 0x20448, 0x1, ScePspemuInitTitleSpecificInfoPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuGetStartupPngRef, tai_info.modid, 0, 0x3C88, 0x1, ScePspemuGetStartupPngPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuGetTitleidRef, tai_info.modid, 0, 0x206DC, 0x1, ScePspemuGetTitleidPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuInitAudioOutRef, tai_info.modid, 0, 0xD190, 0x1, ScePspemuInitAudioOutPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuConvertAddressRef, tai_info.modid, 0, 0x6364, 0x1, ScePspemuConvertAddressPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuDecodePopsAudioRef, tai_info.modid, 0, 0x2D708, 0x1, ScePspemuDecodePopsAudioPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuGetParamRef, tai_info.modid, 0, 0xAAF4, 0x1, ScePspemuGetParamPatched);
+
+    // Increase RAM size from 0x01C00000 to 0x03C00000
+    uint32_t cmp_a4_3C00000 = 0x7F70F1B3;
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x6394, &cmp_a4_3C00000, sizeof(cmp_a4_3C00000));
+
+    uint32_t cmp_v2_3C00000 = 0x7F70F1B5;
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x6434, &cmp_v2_3C00000, sizeof(cmp_v2_3C00000));
+
+    uint32_t cmp_a3_3C00000 = 0x7F70F1B2;
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x6534, &cmp_a3_3C00000, sizeof(cmp_a3_3C00000));
+
+    ////////////////////////////////////////////////////////////////////////
+
+    // Use different mode for ScePspemuRemotePocs
+    uint16_t movs_a1_E = 0x200E;
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x22810, &movs_a1_E, sizeof(movs_a1_E));
+
+    // g_is_pops patches
+
+    uint32_t movs_a4_1_nop_opcode = 0xBF002301;
+    uint32_t movs_a1_0_nop_opcode = 0xBF002000;
+    uint32_t movs_a1_1_nop_opcode = 0xBF002001;
+
+    // Resume stuff. PROBABLY SHOULD DO POPS AND PSP MODE STUFF
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x42F0, &movs_a4_1_nop_opcode, sizeof(movs_a4_1_nop_opcode));
+
+    // Unknown. Mode 4, 5
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x572E, &movs_a4_1_nop_opcode, sizeof(movs_a4_1_nop_opcode));
+
+    // Set cache address for pops stuff
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x57C0, &movs_a4_1_nop_opcode, sizeof(movs_a4_1_nop_opcode));
+
+    // Read savedata and menu info. Should be enabled, otherwise an error will occur
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x5BBA, &movs_a4_1_nop_opcode, sizeof(movs_a4_1_nop_opcode));
+
+    // Get app state for pops
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x5C52, &movs_a4_1_nop_opcode, sizeof(movs_a4_1_nop_opcode));
+
+    // Unknown
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x5E4A, &movs_a4_1_nop_opcode, sizeof(movs_a4_1_nop_opcode));
+
+    ///////////////////////////
+
+    // isPops patches
+
+    // Peripheral
+
+    // Use vibration
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x16AC6, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    // Unknown check for POPS mode
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x16BBC, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    // Unknown check for PSP mode. If false return 0x80010089
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x16C3C, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    // Unknown check for PSP mode. If false return 0
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x16C56, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    // Unknown check for PSP mode. If false return 0
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x16D0E, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    ////////////////////
+
+    // Init ScePspemuMenuWork
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x1832E, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    // Read savedata and menu info
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x0212F2, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    // POPS Settings menu function
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x17C02, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    /////////////////////
+
+    // Settings related. Screenshot is enabled/disabled here. Responsible for __sce_menuinfo saving
+    uint32_t bl_is_pops_patched_opcode_1 = encode_bl(text_addr + 0x210F6, text_addr + 0x20458);
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x210F6, &bl_is_pops_patched_opcode_1, sizeof(bl_is_pops_patched_opcode_1));
+
+    uint32_t bl_is_pops_patched_opcode_2 = encode_bl(text_addr + 0x21120, text_addr + 0x20458);
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x21120, &bl_is_pops_patched_opcode_2, sizeof(bl_is_pops_patched_opcode_2));
+
+    // Switch between PSP mode settings and POPS mode settings
+    uint32_t bl_is_pops_patched_opcode_3 = encode_bl(text_addr + 0x17CBC, text_addr + 0x20458);
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x17CBC, &bl_is_pops_patched_opcode_3, sizeof(bl_is_pops_patched_opcode_3));
+
+    // Draw dialog on PSP screen or POPS screen
+    uint32_t bl_is_pops_patched_opcode_4 = encode_bl(text_addr + 0x18474, text_addr + 0x20458);
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x18474, &bl_is_pops_patched_opcode_4, sizeof(bl_is_pops_patched_opcode_4));
+
+    // ctrlEmulation. If not patched, buttons assignment in ps1emu don't work
+    uint32_t bl_is_pops_patched_opcode_5 = encode_bl(text_addr + 0x207E4, text_addr + 0x20458);
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x207E4, &bl_is_pops_patched_opcode_5, sizeof(bl_is_pops_patched_opcode_5));
+
+    // Use available code memory at text_addr + 0x20458 (ScePspemuInitTitleSpecificInfo)
+    // For custom function: isPopsPatched
+    uint32_t isPopsPatched[4];
+    uint32_t pops_mode_offset = CONVERT_ADDRESS(ADRENALINE_ADDRESS) + offsetof(SceAdrenaline, pops_mode);
+    isPopsPatched[0] = encode_movw(0, pops_mode_offset & 0xFFFF);
+    isPopsPatched[1] = encode_movt(0, pops_mode_offset >> 0x10);
+    isPopsPatched[2] = 0xBF006800; // ldr a1, [a1]
+    isPopsPatched[3] = 0xBF004770; // bx lr
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x20458, isPopsPatched, sizeof(isPopsPatched));
+
+    // Fake vita mode for ctrlEmulation
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x20810, &movs_a1_0_nop_opcode, sizeof(movs_a1_0_nop_opcode));
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x20922, &movs_a1_0_nop_opcode, sizeof(movs_a1_0_nop_opcode));
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x302C0, &movs_a1_0_nop_opcode, sizeof(movs_a1_0_nop_opcode));
+  } else if (module_nid == 0x5459B715) { // 3.72-3.74 retail
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuInitTitleSpecificInfoRef, tai_info.modid, 0, 0x203E8, 0x1, ScePspemuInitTitleSpecificInfoPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuGetStartupPngRef, tai_info.modid, 0, 0x3C88, 0x1, ScePspemuGetStartupPngPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuGetTitleidRef, tai_info.modid, 0, 0x20670, 0x1, ScePspemuGetTitleidPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuInitAudioOutRef, tai_info.modid, 0, 0xD190, 0x1, ScePspemuInitAudioOutPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuConvertAddressRef, tai_info.modid, 0, 0x6364, 0x1, ScePspemuConvertAddressPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuDecodePopsAudioRef, tai_info.modid, 0, 0x2D6AC, 0x1, ScePspemuDecodePopsAudioPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuGetParamRef, tai_info.modid, 0, 0xAAF4, 0x1, ScePspemuGetParamPatched);
+
+    // Increase RAM size from 0x01C00000 to 0x03C00000
+    uint32_t cmp_a4_3C00000 = 0x7F70F1B3;
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x6394, &cmp_a4_3C00000, sizeof(cmp_a4_3C00000));
+
+    uint32_t cmp_v2_3C00000 = 0x7F70F1B5;
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x6434, &cmp_v2_3C00000, sizeof(cmp_v2_3C00000));
+
+    uint32_t cmp_a3_3C00000 = 0x7F70F1B2;
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x6534, &cmp_a3_3C00000, sizeof(cmp_a3_3C00000));
+
+    ////////////////////////////////////////////////////////////////////////
+
+    // Use different mode for ScePspemuRemotePocs
+    uint16_t movs_a1_E = 0x200E;
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x227B4, &movs_a1_E, sizeof(movs_a1_E));
+
+    // g_is_pops patches
+
+    uint32_t movs_a4_1_nop_opcode = 0xBF002301;
+    uint32_t movs_a1_0_nop_opcode = 0xBF002000;
+    uint32_t movs_a1_1_nop_opcode = 0xBF002001;
+
+    // Resume stuff. PROBABLY SHOULD DO POPS AND PSP MODE STUFF
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x42F0, &movs_a4_1_nop_opcode, sizeof(movs_a4_1_nop_opcode));
+
+    // Unknown. Mode 4, 5
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x572E, &movs_a4_1_nop_opcode, sizeof(movs_a4_1_nop_opcode));
+
+    // Set cache address for pops stuff
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x57C0, &movs_a4_1_nop_opcode, sizeof(movs_a4_1_nop_opcode));
+
+    // Read savedata and menu info. Should be enabled, otherwise an error will occur
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x5BBA, &movs_a4_1_nop_opcode, sizeof(movs_a4_1_nop_opcode));
+
+    // Get app state for pops
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x5C52, &movs_a4_1_nop_opcode, sizeof(movs_a4_1_nop_opcode));
+
+    // Unknown
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x5E4A, &movs_a4_1_nop_opcode, sizeof(movs_a4_1_nop_opcode));
+
+    ///////////////////////////
+
+    // isPops patches
+
+    // Peripheral
+
+    // Use vibration
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x16A66, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    // Unknown check for POPS mode
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x16B5C, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    // Unknown check for PSP mode. If false return 0x80010089
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x16BDC, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    // Unknown check for PSP mode. If false return 0
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x16BF6, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    // Unknown check for PSP mode. If false return 0
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x16CAE, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    ////////////////////
+
+    // Init ScePspemuMenuWork
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x182CE, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    // Read savedata and menu info
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x21292, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    // POPS Settings menu function
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x17BA2, &movs_a1_1_nop_opcode, sizeof(movs_a1_1_nop_opcode));
+
+    /////////////////////
+
+    // Settings related. Screenshot is enabled/disabled here. Responsible for __sce_menuinfo saving
+    uint32_t bl_is_pops_patched_opcode_1 = encode_bl(text_addr + 0x21096, text_addr + 0x203F8);
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x21096, &bl_is_pops_patched_opcode_1, sizeof(bl_is_pops_patched_opcode_1));
+
+    uint32_t bl_is_pops_patched_opcode_2 = encode_bl(text_addr + 0x210C0, text_addr + 0x203F8);
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x210C0, &bl_is_pops_patched_opcode_2, sizeof(bl_is_pops_patched_opcode_2));
+
+    // Switch between PSP mode settings and POPS mode settings
+    uint32_t bl_is_pops_patched_opcode_3 = encode_bl(text_addr + 0x17C5C, text_addr + 0x203F8);
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x17C5C, &bl_is_pops_patched_opcode_3, sizeof(bl_is_pops_patched_opcode_3));
+
+    // Draw dialog on PSP screen or POPS screen
+    uint32_t bl_is_pops_patched_opcode_4 = encode_bl(text_addr + 0x18414, text_addr + 0x203F8);
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x18414, &bl_is_pops_patched_opcode_4, sizeof(bl_is_pops_patched_opcode_4));
+
+    // ctrlEmulation. If not patched, buttons assignment in ps1emu don't work
+    uint32_t bl_is_pops_patched_opcode_5 = encode_bl(text_addr + 0x20784, text_addr + 0x203F8);
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x20784, &bl_is_pops_patched_opcode_5, sizeof(bl_is_pops_patched_opcode_5));
+
+    // Use available code memory at text_addr + 0x203F8 (ScePspemuInitTitleSpecificInfo)
+    // For custom function: isPopsPatched
+    uint32_t isPopsPatched[4];
+    uint32_t pops_mode_offset = CONVERT_ADDRESS(ADRENALINE_ADDRESS) + offsetof(SceAdrenaline, pops_mode);
+    isPopsPatched[0] = encode_movw(0, pops_mode_offset & 0xFFFF);
+    isPopsPatched[1] = encode_movt(0, pops_mode_offset >> 0x10);
+    isPopsPatched[2] = 0xBF006800; // ldr a1, [a1]
+    isPopsPatched[3] = 0xBF004770; // bx lr
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x203F8, isPopsPatched, sizeof(isPopsPatched));
+
+    // Fake vita mode for ctrlEmulation
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x207B0, &movs_a1_0_nop_opcode, sizeof(movs_a1_0_nop_opcode));
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x208C2, &movs_a1_0_nop_opcode, sizeof(movs_a1_0_nop_opcode));
+    uids[n_uids++] = taiInjectData(tai_info.modid, 0, 0x30260, &movs_a1_0_nop_opcode, sizeof(movs_a1_0_nop_opcode));
   }
 
   return SCE_KERNEL_START_SUCCESS;
