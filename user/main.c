@@ -872,7 +872,7 @@ int module_start(SceSize args, void *argp) {
   } else if (module_nid == 0xEA8C1AE2) { // 3.71 retail
     hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuInitTitleSpecificInfoRef, tai_info.modid, 0, 0x20448, 0x1, ScePspemuInitTitleSpecificInfoPatched);
     hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuGetStartupPngRef, tai_info.modid, 0, 0x3C88, 0x1, ScePspemuGetStartupPngPatched);
-    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuGetTitleidRef, tai_info.modid, 0, 0x206DC, 0x1, ScePspemuGetTitleidPatched);
+    hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuGetTitleidRef, tai_info.modid, 0, 0x206D0, 0x1, ScePspemuGetTitleidPatched);
     hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuInitAudioOutRef, tai_info.modid, 0, 0xD190, 0x1, ScePspemuInitAudioOutPatched);
     hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuConvertAddressRef, tai_info.modid, 0, 0x6364, 0x1, ScePspemuConvertAddressPatched);
     hooks[n_hooks++] = taiHookFunctionOffset(&ScePspemuDecodePopsAudioRef, tai_info.modid, 0, 0x2D708, 0x1, ScePspemuDecodePopsAudioPatched);

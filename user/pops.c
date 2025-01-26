@@ -46,9 +46,8 @@ int ScePspemuInitAudioOutPatched() {
   if (blockid < 0)
     return blockid;
 
-  sceKernelGetMemBlockBase(blockid, (void *)(data_addr + 0x10100));
-
   int (* init_sth)() = NULL;
+  int base_offset = 0x10100;
 
   if (module_nid == 0x2714F07D) { // 3.60 retail
     init_sth = (void *)(text_addr + 0x31F90 + 0x1);
@@ -56,11 +55,14 @@ int ScePspemuInitAudioOutPatched() {
     init_sth = (void *)(text_addr + 0x31FA4 + 0x1);
   } else if (module_nid == 0xEA8C1AE2) { // 3.71 retail
     init_sth = (void *)(text_addr + 0x32074 + 0x1);
+    base_offset = 0x10108;
   } else if (module_nid == 0x5459B715) { // 3.72-3.74 retail
     init_sth = (void *)(text_addr + 0x32014 + 0x1);
   }
 
-  init_sth(*(uint32_t *)(data_addr + 0x10100), 0x1E000);
+  sceKernelGetMemBlockBase(blockid, (void *)(data_addr + base_offset));
+
+  init_sth(*(uint32_t *)(data_addr + base_offset), 0x1E000);
 
   res = ScePspemuInitPocs();
   if (res < 0)
